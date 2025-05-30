@@ -376,139 +376,142 @@
         </main>
     </div>
     
-    <script>
-        let attendanceRecords = [];
+<script>
+    let attendanceRecords = [];
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            await fetchAttendanceRecords();
-            populateTable(attendanceRecords);
-            
-            // Add animation to header
-            const header = document.querySelector('header');
-            header.style.opacity = '0';
-            header.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                header.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                header.style.opacity = '1';
-                header.style.transform = 'translateY(0)';
-            }, 100);
+document.addEventListener('DOMContentLoaded', async function() {
+    await fetchAttendanceRecords();
+    populateTable(attendanceRecords);
+    
+    // Start polling every 10 seconds
+    setInterval(fetchAttendanceRecords, 10000);
+    
+    // Add animation to header
+    const header = document.querySelector('header');
+    header.style.opacity = '0';
+    header.style.transform = 'translateY(-20px)';
+    setTimeout(() => {
+        header.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        header.style.opacity = '1';
+        header.style.transform = 'translateY(0)';
+    }, 100);
+});
+
+async function fetchAttendanceRecords() {
+    try {
+        const searchTerm = searchInput.value.trim();
+        const url = searchTerm 
+            ? `http://localhost:5000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
+            : 'http://localhost:5000/api/attendance';
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch attendance records');
+        }
+        attendanceRecords = await response.json();
+        populateTable(attendanceRecords);
+    } catch (error) {
+        console.error('Error fetching attendance records:', error);
+        showNotification('Failed to load attendance records. Please try again later.', 'error');
+    }
+}
+
+function populateTable(data) {
+    const tableBody = document.getElementById('attendanceTableBody');
+    tableBody.innerHTML = '';
+
+    if (data.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td colspan="6" class="no-records">
+                <i class="far fa-folder-open"></i>
+                <div>No attendance records found</div>
+            </td>`;
+        tableBody.appendChild(row);
+        return;
+    }
+
+    data.forEach((record, index) => {
+        try {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><i class="fas fa-user-tie"></i> ${record.employee_id || 'Unknown'}</td>
+                <td>${formatDate(record.date)}</td>
+                <td>${record.clock_in || '--:--'}</td>
+                <td>${record.clock_out || '--:--'}</td>
+                <td>${record.duration || '0h 0m'}</td>
+                <td>
+                    <span class="status status-${record.status}">
+                        <i class="${getStatusIcon(record.status)}"></i>
+                        ${formatStatusText(record.status)}
+                    </span>
+                </td>
+            `;
+            row.style.animationDelay = `${index * 0.1}s`;
+            tableBody.appendChild(row);
+        } catch (error) {
+            console.error('Error rendering record:', record, error);
+        }
+    });
+}
+
+function getStatusIcon(status) {
+    switch(status) {
+        case 'present': return 'fas fa-check-circle';
+        case 'late': return 'fas fa-clock';
+        case 'absent': return 'fas fa-times-circle';
+        default: return 'fas fa-question-circle';
+    }
+}
+
+function formatStatusText(status) {
+    return status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
+}
+
+function formatDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        return isNaN(date) ? dateString : date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
         });
+    } catch {
+        return dateString;
+    }
+}
 
-        async function fetchAttendanceRecords() {
-            try {
-                const searchTerm = searchInput.value.trim();
-                const url = searchTerm 
-                    ? `http://localhost:5000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
-                    : 'http://localhost:5000/api/attendance';
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch attendance records');
-                }
-                attendanceRecords = await response.json();
-                populateTable(attendanceRecords);
-            } catch (error) {
-                console.error('Error fetching attendance records:', error);
-                showNotification('Failed to load attendance records. Please try again later.', 'error');
+function filterRecords(searchTerm) {
+    const filteredRecords = attendanceRecords.filter(record =>
+        String(record.employee_id).toUpperCase().includes(searchTerm.toUpperCase()) ||
+        (record.employee_name && record.employee_name.toUpperCase().includes(searchTerm.toUpperCase()))
+    );
+    populateTable(filteredRecords);
+}
+
+function showNotification(message, type = 'info') {
+    // You can implement a nice notification system here
+    alert(message); // Temporary simple alert
+}
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.trim();
+        filterRecords(searchTerm);
+    });
+    
+    // Add debounce to prevent too many requests
+    let debounceTimer;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm.length > 2 || searchTerm.length === 0) {
+                fetchAttendanceRecords();
             }
-        }
-
-        function populateTable(data) {
-            const tableBody = document.getElementById('attendanceTableBody');
-            tableBody.innerHTML = '';
-
-            if (data.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" class="no-records">
-                        <i class="far fa-folder-open"></i>
-                        <div>No attendance records found</div>
-                    </td>`;
-                tableBody.appendChild(row);
-                return;
-            }
-
-            data.forEach((record, index) => {
-                try {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><i class="fas fa-user-tie"></i> ${record.employee_id || 'Unknown'}</td>
-                        <td>${formatDate(record.date)}</td>
-                        <td>${record.clock_in || '--:--'}</td>
-                        <td>${record.clock_out || '--:--'}</td>
-                        <td>${record.duration || '0h 0m'}</td>
-                        <td>
-                            <span class="status status-${record.status}">
-                                <i class="${getStatusIcon(record.status)}"></i>
-                                ${formatStatusText(record.status)}
-                            </span>
-                        </td>
-                    `;
-                    row.style.animationDelay = `${index * 0.1}s`;
-                    tableBody.appendChild(row);
-                } catch (error) {
-                    console.error('Error rendering record:', record, error);
-                }
-            });
-        }
-
-        function getStatusIcon(status) {
-            switch(status) {
-                case 'present': return 'fas fa-check-circle';
-                case 'late': return 'fas fa-clock';
-                case 'absent': return 'fas fa-times-circle';
-                default: return 'fas fa-question-circle';
-            }
-        }
-
-        function formatStatusText(status) {
-            return status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
-        }
-
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return isNaN(date) ? dateString : date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-            } catch {
-                return dateString;
-            }
-        }
-
-        function filterRecords(searchTerm) {
-            const filteredRecords = attendanceRecords.filter(record =>
-                String(record.employee_id).toUpperCase().includes(searchTerm.toUpperCase()) ||
-                (record.employee_name && record.employee_name.toUpperCase().includes(searchTerm.toUpperCase()))
-            );
-            populateTable(filteredRecords);
-        }
-
-        function showNotification(message, type = 'info') {
-            // You can implement a nice notification system here
-            alert(message); // Temporary simple alert
-        }
-
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.trim();
-                searchTerm ? filterRecords(searchTerm) : populateTable(attendanceRecords);
-            });
-            
-            // Add debounce to prevent too many requests
-            let debounceTimer;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    const searchTerm = e.target.value.trim();
-                    if (searchTerm.length > 2 || searchTerm.length === 0) {
-                        fetchAttendanceRecords();
-                    }
-                }, 500);
-            });
-        }
-    </script>
+        }, 500);
+    });
+}
+</script>
 </body>
 </html>

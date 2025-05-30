@@ -719,6 +719,7 @@ async function handleClockInOut() {
     const now = new Date();
     const employeeId = empIdInput.value.trim();
     clockBtn.disabled = true; // Disable button during async operation
+
     if (!isClockedIn) {
         isClockedIn = true;
         clockInTime = now;
@@ -732,6 +733,47 @@ async function handleClockInOut() {
         arrivalTimeElement.textContent = formatTime(now);
         currentStatusElement.textContent = determineStatus(now);
         timerInterval = setInterval(updateTracker, 1000);
+
+        // Add temporary record to attendanceRecords
+        const tempRecord = {
+            employee_id: employeeId,
+            date: now.toISOString().split('T')[0],
+            clock_in: formatTime(now),
+            clock_out: null,
+            duration: '0h 0m',
+            status: determineStatus(now)
+        };
+        attendanceRecords.unshift(tempRecord); // Add to the start of the array
+        updateAttendanceTable(); // Update table immediately
+
+        // Send clock-in record to server
+        try {
+            const response = await fetch('http://localhost:5000/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employeeId: employeeId,
+                    date: now.toISOString().split('T')[0],
+                    clockIn: formatTime(now),
+                    clockOut: null,
+                    duration: null,
+                    status: determineStatus(now)
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save clock-in record');
+            }
+        } catch (error) {
+            console.error('Error saving clock-in record:', error);
+            alert(`Error: ${error.message}`);
+            // Optionally, revert UI changes if server save fails
+            isClockedIn = false;
+            clockBtn.disabled = false;
+            return;
+        }
+
         clockBtn.disabled = false;
     } else {
         const confirmed = confirm("Are you sure you want to clock out?");
@@ -743,7 +785,7 @@ async function handleClockInOut() {
         clearInterval(timerInterval);
         const duration = calculateDuration(clockInTime, now);
         const status = determineStatus(clockInTime);
-        const newRecord = {
+        const updateRecord = {
             employeeId: employeeId,
             date: now.toISOString().split('T')[0],
             clockIn: formatTime(clockInTime),
@@ -753,24 +795,25 @@ async function handleClockInOut() {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/attendance', {
-                method: 'POST',
+            // Update existing record
+            const response = await fetch(`http://localhost:5000/api/attendance/${employeeId}/${updateRecord.date}`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newRecord)
+                body: JSON.stringify(updateRecord)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to save attendance record');
+                throw new Error(errorData.error || 'Failed to update attendance record');
             }
 
             // Fetch updated records from server
             await fetchAttendanceRecords(employeeId);
         } catch (error) {
-            console.error('Error saving attendance record:', error);
+            console.error('Error updating attendance record:', error);
             alert(`Error: ${error.message}`);
             clockBtn.disabled = false;
-            return; // Don't reset UI if server save fails
+            return; // Don't reset UI if server update fails
         }
 
         // Reset UI

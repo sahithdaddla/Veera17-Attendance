@@ -136,6 +136,56 @@ app.post('/api/attendance', async (req, res) => {
     }
 });
 
+// PUT to update an existing attendance record
+app.put('/api/attendance/:employeeId/:date', async (req, res) => {
+    const { employeeId, date } = req.params;
+    const { clockIn, clockOut, duration, status } = req.body;
+
+    // Validate inputs
+    if (!employeeId || !/^(ATS0(?!000)\d{3})$/.test(employeeId)) {
+        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 4 digits (e.g., ATS0987)' });
+    }
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ error: 'Invalid date format' });
+    }
+    if (!status || !['present', 'late', 'absent'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status. Must be present, late, or absent' });
+    }
+    if (clockIn && !/^\d{2}:\d{2}$/.test(clockIn)) {
+        return res.status(400).json({ error: 'Invalid clockIn time format' });
+    }
+    if (clockOut && !/^\d{2}:\d{2}$/.test(clockOut)) {
+        return res.status(400).json({ error: 'Invalid clockOut time format' });
+    }
+    if (duration && !/^\d+h \d+m$/.test(duration)) {
+        return res.status(400).json({ error: 'Invalid duration format' });
+    }
+
+    try {
+        // Check for existing record
+        const existingRecord = await pool.query(
+            'SELECT * FROM attendance WHERE employee_id = $1 AND date = $2',
+            [employeeId, date]
+        );
+        if (existingRecord.rows.length === 0) {
+            return res.status(404).json({ error: 'Attendance record not found' });
+        }
+
+        // Update record
+        const result = await pool.query(
+            `UPDATE attendance
+             SET clock_in = $1, clock_out = $2, duration = $3, status = $4
+             WHERE employee_id = $5 AND date = $6
+             RETURNING *`,
+            [clockIn || null, clockOut || null, duration || null, status, employeeId, date]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating attendance record:', err.stack);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
