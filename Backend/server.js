@@ -7,25 +7,14 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // CORS configuration to allow multiple origins
 const allowedOrigins = [
     'http://localhost:3000',
-    'http://127.0.0.1:5500', // For VS Code Live Server
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        } else {
-            return callback(new Error('Not allowed by CORS'));
-        }
-    },
-    optionsSuccessStatus: 200
-}));
+app.use(cors());
 
 app.use(express.json());
 

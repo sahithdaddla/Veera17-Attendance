@@ -401,8 +401,8 @@ async function fetchAttendanceRecords() {
     try {
         const searchTerm = searchInput.value.trim();
         const url = searchTerm 
-            ? `http://localhost:5000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
-            : 'http://localhost:5000/api/attendance';
+            ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
+            : 'http://localhost:3000/api/attendance';
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Failed to fetch attendance records');

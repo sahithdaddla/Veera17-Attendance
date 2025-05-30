@@ -483,6 +483,16 @@ td {
 #clockBtn:disabled i {
     color: var(--text-secondary) !important;
 }
+.attendance-graph {
+    width: 100%;
+    height: 400px; /* Fixed height for the chart */
+    margin-top: 20px;
+}
+
+.attendance-graph canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
     </style>
 </head>
 <body>
@@ -620,8 +630,8 @@ empIdInput.parentNode.appendChild(errorElement);
 async function fetchAttendanceRecords(employeeId) {
     try {
         const url = employeeId 
-            ? `http://localhost:5000/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
-            : 'http://localhost:5000/api/attendance';
+            ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
+            : 'http://localhost:3000/api/attendance';
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Failed to fetch attendance records');
@@ -748,7 +758,7 @@ async function handleClockInOut() {
 
         // Send clock-in record to server
         try {
-            const response = await fetch('http://localhost:5000/api/attendance', {
+            const response = await fetch('http://localhost:3000/api/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -796,7 +806,7 @@ async function handleClockInOut() {
 
         try {
             // Update existing record
-            const response = await fetch(`http://localhost:5000/api/attendance/${employeeId}/${updateRecord.date}`, {
+            const response = await fetch(`http://localhost:3000/api/attendance/${employeeId}/${updateRecord.date}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updateRecord)
@@ -852,42 +862,53 @@ function updateAttendanceTable() {
 function updateMonthlyChart() { 
     const monthlyData = {};
     const currentYear = new Date().getFullYear();
+    
+    // Count working days per month
     attendanceRecords.forEach(record => {
         const date = new Date(record.date);
         if (date.getFullYear() === currentYear) {
             const month = date.getMonth();
             const monthName = date.toLocaleString('default', { month: 'short' });
+            
             if (!monthlyData[month]) {
                 monthlyData[month] = {
                     monthName: monthName,
-                    totalMinutes: 0,
-                    count: 0
+                    workingDays: 0
                 };
             }
-            const minutes = parseDuration(record.duration || '0h 0m');
-            monthlyData[month].totalMinutes += minutes;
-            monthlyData[month].count++;
+            
+            // Only count as working day if there's a clock-in record
+            if (record.clock_in) {
+                monthlyData[month].workingDays++;
+            }
         }
     });
+
+    // Prepare data for chart
     const months = [];
-    const avgHours = [];
+    const workingDays = [];
     const colors = [];
+    
     for (let i = 0; i < 12; i++) {
         const monthData = monthlyData[i] || {
             monthName: new Date(currentYear, i, 1).toLocaleString('default', { month: 'short' }),
-            totalMinutes: 0,
-            count: 1
+            workingDays: 0
         };
+        
         months.push(monthData.monthName);
-        const avgMinutes = monthData.totalMinutes / monthData.count;
-        const avgHoursValue = avgMinutes / 60;
-        avgHours.push(Math.round(avgHoursValue));
-        colors.push(avgHoursValue >= 8 ? 'rgba(23,67,88,0.5)' : 'rgba(4, 59, 92)');
+        workingDays.push(monthData.workingDays);
+        
+        // Different color based on working days (you can adjust these thresholds)
+        colors.push(monthData.workingDays >= 20 ? 'rgba(34, 197, 94, 0.5)' : 
+                   monthData.workingDays >= 15 ? 'rgba(234, 179, 8, 0.5)' : 
+                   'rgba(239, 68, 68, 0.5)');
     }
+
     const ctx = document.getElementById('monthlyChart').getContext('2d');
+    
     if (monthlyChart) {
         monthlyChart.data.labels = months;
-        monthlyChart.data.datasets[0].data = avgHours;
+        monthlyChart.data.datasets[0].data = workingDays;
         monthlyChart.data.datasets[0].backgroundColor = colors;
         monthlyChart.update();
     } else {
@@ -896,8 +917,8 @@ function updateMonthlyChart() {
             data: {
                 labels: months,
                 datasets: [{
-                    label: 'Average Daily Hours',
-                    data: avgHours,
+                    label: 'Working Days',
+                    data: workingDays,
                     backgroundColor: colors,
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 0.5
@@ -905,13 +926,15 @@ function updateMonthlyChart() {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Hours'
-                        }
+                            text: 'Number of Days'
+                        },
+                        max: 31 // Since maximum days in a month is 31
                     },
                     x: {
                         title: {
@@ -924,9 +947,12 @@ function updateMonthlyChart() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `${context.parsed.y} hours`;
+                                return `${context.parsed.y} working days`;
                             }
                         }
+                    },
+                    legend: {
+                        display: false
                     }
                 }
             }
