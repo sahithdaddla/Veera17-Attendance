@@ -20,11 +20,11 @@ app.use(express.json());
 
 // PostgreSQL connection configuration
 const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'attendance_system',
-    password: process.env.DB_PASSWORD || 'Veera@0134',
-    port: process.env.DB_PORT || 5432,
+    user:'postgres',
+    host:'localhost',
+    database:'attendance_system',
+    password:'Veera@0134',
+    port:5432,
 });
 
 // Connect to PostgreSQL
@@ -38,16 +38,17 @@ pool.connect((err) => {
 
 // Create attendance table if it doesn't exist
 const createTableQuery = `
-    CREATE TABLE IF NOT EXISTS attendance (
-        id SERIAL PRIMARY KEY,
-        employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0(?!000)\\d{3}$'),
-        date DATE NOT NULL,
-        clock_in TIME,
-        clock_out TIME,
-        duration VARCHAR(10),
-        status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'late', 'absent')),
-        UNIQUE(employee_id, date)
-    );
+    DROP TABLE IF EXISTS attendance;
+CREATE TABLE attendance (
+    id SERIAL PRIMARY KEY,
+    employee_id VARCHAR(7) NOT NULL,
+    date DATE NOT NULL,
+    clock_in TIME,
+    clock_out TIME,
+    duration VARCHAR(10),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'late', 'absent')),
+    UNIQUE(employee_id, date)
+);
 `;
 
 pool.query(createTableQuery, (err, res) => {
@@ -57,8 +58,6 @@ pool.query(createTableQuery, (err, res) => {
         console.log('Attendance table ready');
     }
 });
-
-// API Endpoints
 
 // GET all attendance records, optionally filtered by employee_id
 app.get('/api/attendance', async (req, res) => {
