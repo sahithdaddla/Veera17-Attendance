@@ -6,493 +6,484 @@
     <title>Employee Attendance System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
         :root {
-    --bg-primary: #ffffff; 
-    --bg-secondary: #f2f2f2; 
-    --bg-tertiary: #e0e0e0; 
-    --text-primary: #000000; 
-    --text-secondary: #555555; 
-    --accent-primary: #3b82f6;
-    --accent-hover: #2563eb; 
-    --success: #22c55e; 
-    --warning: #eab308;
-    --danger: #ef4444;
-    --card-bg: #f2f2f2; 
-    --border-color: #cccccc; 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    line-height: 1.5;
-    min-height: 100vh;
-}
-
-.app-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-.sidebar {
-    width: 280px;
-    background-color: white;
-    padding: 2rem 1.5rem;
-    border-right: 1px solid var(--border-color);
-}
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-}
-
-.logo-icon {
-    color: var(--accent-primary); 
-}
-
-.sidebar h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.employee-profile {
-    padding: 1.5rem;
-    background-color: var(--card-bg); 
-    border-radius: 1rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-lg); 
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: all 0.2s;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-.form-control:invalid {
-    border-color: var(--danger);
-}
-
-.form-control:valid {
-    border-color: var(--success);
-}
-
-.employee-profile label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.error-message {
-    color: var(--danger);
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-    display: none;
-}
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.sidebar-nav a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
-}
-
-.sidebar-nav a:hover {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-
-.sidebar-nav a.active {
-    background-color: var(--accent-primary); 
-    color: var(--text-primary);
-}
-
-.main-content {
-    flex: 1;
-    padding: 2rem;
-    overflow-y: auto;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.datetime-display {
-    text-align: right;
-}
-
-.time {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: var(--text-primary);
-}
-
-.date {
-    color: var(--text-secondary);
-}
-
-.quick-stats {
-    display: flex;
-    gap: 2rem;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-label {
-    display: block;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-.stat-value {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-}
-
-.clock-card {
-    grid-column: span 2;
-    background-color: var(--card-bg); 
-    padding: 2rem;
-    border-radius: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-}
-
-.clock-status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.status-circle {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-
-.status-circle.active {
-    background-color: var(--success); 
-    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
-}
-
-.status-message {
-    color: var(--text-secondary);
-}
-
-.time-tracker {
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tracker-display {
-    font-size: 3rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-}
-
-.action-button {
-    padding: 0.75rem 2rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 1rem;
-}
-
-.clock-in {
-    background: var(--gradient-blue); 
-    color: white;
-}
-
-.clock-in:hover {
-    background: var(--accent-hover);
-}
-
-.clock-out {
-    background-color: var(--danger);
-    color: white;
-}
-
-.clock-out:hover {
-    background-color: #dc2626;
-}
-
-.stats-card {
-    background-color: var(--card-bg); 
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: var(--shadow-lg); 
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.stat-box {
-    background-color: var(--bg-tertiary);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.stat-box svg {
-    color: var(--accent-primary); 
-}
-
-.stat-title {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-.attendance-card {
-    grid-column: span 2;
-    background-color: var(--card-bg); 
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: var(--shadow-lg);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.view-controls {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.view-btn {
-    padding: 0.5rem 1rem;
-    background-color: var(--bg-tertiary);
-    border: none;
-    border-radius: 0.5rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.view-btn.active {
-    background-color: var(--accent-primary); 
-    color: var(--text-primary);
-}
-
-.attendance-table {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-th, td {
-    padding: 1rem;
-    text-align: left;
-}
-
-th {
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.875rem;
-}
-
-th:first-child {
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
-}
-
-th:last-child {
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-}
-
-td {
-    border-bottom: 1px solid var(--border-color);
-}
-
-.status {
-    display: inline-flex;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.status-present {
-    background-color: rgba(34, 197, 94, 0.2); 
-    color: var(--success);
-}
-
-.status-late {
-    background-color: rgba(234, 179, 8, 0.2); 
-    color: var(--warning);
-}
-
-.status-early-leave {
-    background-color: rgba(239, 68, 68, 0.2); 
-    color: var(--danger);
-}
-
-@media (max-width: 1024px) {
-    .sidebar {
-        width: 80px;
-        padding: 1.5rem 1rem;
-    }
-
-    .sidebar h1,
-    .sidebar-nav span {
-        display: none;
-    }
-
-    .sidebar-nav a {
-        justify-content: center;
-        padding: 0.75rem;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .clock-card,
-    .attendance-card {
-        grid-column: span 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-content {
-        padding: 1rem;
-    }
-
-    .top-bar {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-
-    .clock-card {
-        flex-direction: column;
-        gap: 2rem;
-        text-align: center;
-    }
-
-    .tracker-display {
-        font-size: 2.5rem;
-    }
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.status-circle.active {
-    animation: pulse 2s infinite;
-}
-
-#clockBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--bg-tertiary) !important;
-}
-
-#clockBtn:disabled i {
-    color: var(--text-secondary) !important;
-}
-.attendance-graph {
-    width: 100%;
-    height: 400px; /* Fixed height for the chart */
-    margin-top: 20px;
-}
-
-.attendance-graph canvas {
-    width: 100% !important;
-    height: 100% !important;
-}
+            --bg-primary: #ffffff;
+            --bg-secondary: #f2f2f2;
+            --bg-tertiary: #e0e0e0;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --card-bg: #f2f2f2;
+            --border-color: #cccccc;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            padding: 2rem 1.5rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            color: var(--accent-primary);
+        }
+
+        .sidebar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .employee-profile {
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-control:invalid {
+            border-color: var(--danger);
+        }
+
+        .form-control:valid {
+            border-color: var(--success);
+        }
+
+        .employee-profile label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav a:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav a.active {
+            background-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .datetime-display {
+            text-align: right;
+        }
+
+        .time {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .date {
+            color: var(--text-secondary);
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .clock-card {
+            grid-column: span 2;
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .clock-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-circle.active {
+            background-color: var(--success);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+        }
+
+        .status-message {
+            color: var(--text-secondary);
+        }
+
+        .time-tracker {
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tracker-display {
+            font-size: 3rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .action-button {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .clock-in {
+            background: var(--gradient-blue);
+            color: white;
+        }
+
+        .clock-in:hover {
+            background: var(--accent-hover);
+        }
+
+        .clock-out {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .clock-out:hover {
+            background-color: #dc2626;
+        }
+
+        .stats-card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-box {
+            background-color: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-box svg {
+            color: var(--accent-primary);
+        }
+
+        .stat-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .attendance-card {
+            grid-column: span 2;
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-tertiary);
+            border: none;
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .attendance-table {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        th:first-child {
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+
+        th:last-child {
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        td {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status {
+            display: inline-flex;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-present {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .status-late {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: var(--warning);
+        }
+
+        .status-early-leave {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 1.5rem 1rem;
+            }
+
+            .sidebar h1,
+            .sidebar-nav span {
+                display: none;
+            }
+
+            .sidebar-nav a {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .clock-card,
+            .attendance-card {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .clock-card {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .tracker-display {
+                font-size: 2.5rem;
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-circle.active {
+            animation: pulse 2s infinite;
+        }
+
+        #clockBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-tertiary) !important;
+        }
+
+        #clockBtn:disabled i {
+            color: var(--text-secondary) !important;
+        }
+
+        .attendance-graph {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .attendance-graph canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
     </style>
 </head>
 <body>
@@ -508,24 +499,23 @@ td {
                 <svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0"/><path d="M12 7v5l3 3"/></svg>
                 <h1>Timekeeper</h1>
             </div>
-            
             <div class="employee-profile">
                 <div class="profile-info">
                     <label for="empId">Employee ID</label>
-<input 
-    type="text" 
-    id="empId" 
-    name="empId" 
-    class="form-control"
-    required 
-    maxlength="7"
-    pattern="^ATS0(?!000)\d{3}$" 
-    title="Employee ID must start with ATS0 followed by 3 digits (e.g., ATS0987)"
-    oninput="this.value = this.value.toUpperCase()"
->
+                    <input 
+                        type="text" 
+                        id="empId" 
+                        name="empId" 
+                        class="form-control"
+                        required 
+                        maxlength="7"
+                        pattern="^ATS0(?!000)\d{3}$" 
+                        title="Employee ID must start with ATS0 followed by 3 digits (e.g., ATS0987)"
+                        oninput="this.value = this.value.toUpperCase()"
+                    >
+                    <div class="error-message" id="empIdError"></div>
                 </div>
             </div>
-
             <section class="stats-card">
                 <h3>Today's Overview</h3>
                 <div class="stats-grid">
@@ -542,7 +532,6 @@ td {
                 </div>
             </section>
         </aside>
-
         <main class="main-content">
             <header class="top-bar">
                 <div class="datetime-display">
@@ -550,7 +539,6 @@ td {
                     <div class="date" id="current-date"></div>
                 </div>
             </header>
-
             <div class="dashboard-grid">
                 <section class="clock-card">
                     <div class="clock-status">
@@ -561,11 +549,10 @@ td {
                     <div class="time-tracker">
                         <div class="tracker-display" id="trackerDisplay">00:00:00</div>
                     </div>
-                    <button id="clockBtn" class="action-button clock-in">
+                    <button id="clockBtn" class="action-button clock-in" disabled>
                         <i class="fa-solid fa-fingerprint fa-5x"></i>
                     </button>
                 </section>
-
                 <section class="attendance-card">
                     <div class="card-header">
                         <h3>Attendance History</h3>
@@ -585,9 +572,7 @@ td {
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="attendanceTableBody">
-                                <!-- Table content will be populated by JavaScript -->
-                            </tbody>
+                            <tbody id="attendanceTableBody"></tbody>
                         </table>
                     </div>
                     <div class="attendance-graph" id="attendanceGraph" style="display: none;">
@@ -598,417 +583,434 @@ td {
         </main>
     </div>
     <script>
-const currentTimeElement = document.getElementById('current-time');
-const currentDateElement = document.getElementById('current-date');
-const clockBtn = document.getElementById('clockBtn');
-const clockIcon = clockBtn.querySelector('i');
-const clockStatus = document.getElementById('clock-status');
-const clockMessage = document.getElementById('clock-message');
-const statusCircle = document.getElementById('statusCircle');
-const trackerDisplay = document.getElementById('trackerDisplay');
-const arrivalTimeElement = document.getElementById('arrivalTime');
-const currentStatusElement = document.getElementById('currentStatus');
-const attendanceTableBody = document.getElementById('attendanceTableBody');
-const weekViewBtn = document.getElementById('weekViewBtn');
-const monthViewBtn = document.getElementById('monthViewBtn');
-const attendanceTable = document.getElementById('attendanceTable');
-const attendanceGraph = document.getElementById('attendanceGraph');
-const empIdInput = document.getElementById('empId');
-let monthlyChart = null;
+        const currentTimeElement = document.getElementById('current-time');
+        const currentDateElement = document.getElementById('current-date');
+        const clockBtn = document.getElementById('clockBtn');
+        const clockIcon = clockBtn.querySelector('i');
+        const clockStatus = document.getElementById('clock-status');
+        const clockMessage = document.getElementById('clock-message');
+        const statusCircle = document.getElementById('statusCircle');
+        const trackerDisplay = document.getElementById('trackerDisplay');
+        const arrivalTimeElement = document.getElementById('arrivalTime');
+        const currentStatusElement = document.getElementById('currentStatus');
+        const attendanceTableBody = document.getElementById('attendanceTableBody');
+        const weekViewBtn = document.getElementById('weekViewBtn');
+        const monthViewBtn = document.getElementById('monthViewBtn');
+        const attendanceTable = document.getElementById('attendanceTable');
+        const attendanceGraph = document.getElementById('attendanceGraph');
+        const empIdInput = document.getElementById('empId');
+        const empIdError = document.getElementById('empIdError');
+        let monthlyChart = null;
+        let isClockedIn = false;
+        let clockInTime = null;
+        let timerInterval = null;
+        let attendanceRecords = [];
+        let isFetching = false;
 
-let isClockedIn = false;
-let clockInTime = null;
-let timerInterval = null;
-let attendanceRecords = [];
-clockBtn.disabled = true;
+        async function fetchAttendanceRecords(employeeId) {
+            if (isFetching) return;
+            isFetching = true;
+            clockBtn.disabled = true;
+            try {
+                const url = employeeId 
+                    ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
+                    : 'http://localhost:3000/api/attendance';
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch attendance records');
+                }
+                attendanceRecords = await response.json();
+                updateAttendanceTable();
 
-const errorElement = document.createElement('div');
-errorElement.className = 'error-message';
-errorElement.id = 'empIdError';
-empIdInput.parentNode.appendChild(errorElement);
+                // Check today's record
+                const today = new Date().toISOString().split('T')[0];
+                const todayResponse = await fetch(`http://localhost:3000/api/attendance/today/${encodeURIComponent(employeeId)}`);
+                let todayRecord = null;
+                if (todayResponse.ok) {
+                    todayRecord = await todayResponse.json();
+                }
 
-async function fetchAttendanceRecords(employeeId) {
-    try {
-        const url = employeeId 
-            ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
-            : 'http://localhost:3000/api/attendance';
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Failed to fetch attendance records');
-        }
-        attendanceRecords = await response.json();
-        updateAttendanceTable();
-        if (monthViewBtn.classList.contains('active')) {
-            updateMonthlyChart();
-        }
-        // Check if there's an active session for today
-        const today = new Date().toISOString().split('T')[0];
-        const todayRecord = attendanceRecords.find(
-            record => record.date === today && record.employee_id === employeeId && record.clock_in && !record.clock_out
-        );
-        if (todayRecord) {
-            isClockedIn = true;
-            clockInTime = new Date(`${today}T${todayRecord.clock_in}`);
-            clockIcon.classList.remove('fa-fingerprint');
-            clockIcon.classList.add('fa-user-check');
-            clockBtn.classList.remove('clock-in');
-            clockBtn.classList.add('clock-out');
-            clockStatus.textContent = 'Working';
-            clockMessage.textContent = 'Time is being tracked';
-            statusCircle.classList.add('active');
-            arrivalTimeElement.textContent = todayRecord.clock_in;
-            currentStatusElement.textContent = todayRecord.status;
-            timerInterval = setInterval(updateTracker, 1000);
-        }
-    } catch (error) {
-        console.error('Error fetching attendance records:', error);
-        alert('Failed to load attendance records. Please try again later.');
-    }
-}
-
-function updateDateTime() {
-    const now = new Date();
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    currentTimeElement.textContent = now.toLocaleTimeString('en-US', timeOptions);
-    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    currentDateElement.textContent = now.toLocaleDateString('en-US', dateOptions);
-}
-
-function formatDuration(milliseconds) {
-    const seconds = Math.floor(milliseconds / 1000);
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return [hours, minutes, remainingSeconds]
-        .map(num => num.toString().padStart(2, '0'))
-        .join(':');
-}
-
-function calculateDuration(startTime, endTime) {
-    const diff = endTime - startTime;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m`;
-}
-
-function parseDuration(durationStr) {
-    if (!durationStr || durationStr === '0h 0m') return 0;
-    const [hoursStr, minutesStr] = durationStr.split('h ');
-    const hours = parseInt(hoursStr);
-    const minutes = parseInt(minutesStr.replace('m', ''));
-    return hours * 60 + minutes; // Return total minutes
-}
-
-function determineStatus(clockInTime) {
-    const clockInHour = clockInTime.getHours();
-    const clockInMinute = clockInTime.getMinutes();
-    if (clockInHour < 10 || (clockInHour === 10 && clockInMinute <= 0)) {
-        return 'present';
-    } else if (clockInHour === 10 && clockInMinute <= 15) {
-        return 'late';
-    } else {
-        return 'late';
-    }
-}
-
-function formatTime(date) {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-function updateTracker() {
-    if (clockInTime) {
-        const now = new Date();
-        const duration = now - clockInTime;
-        trackerDisplay.textContent = formatDuration(duration);
-    }
-}
-
-async function handleClockInOut() {
-    const now = new Date();
-    const employeeId = empIdInput.value.trim();
-    clockBtn.disabled = true; // Disable button during async operation
-
-    if (!isClockedIn) {
-        isClockedIn = true;
-        clockInTime = now;
-        clockIcon.classList.remove('fa-fingerprint');
-        clockIcon.classList.add('fa-user-check');
-        clockBtn.classList.remove('clock-in');
-        clockBtn.classList.add('clock-out');
-        clockStatus.textContent = 'Working';
-        clockMessage.textContent = 'Time is being tracked';
-        statusCircle.classList.add('active');
-        arrivalTimeElement.textContent = formatTime(now);
-        currentStatusElement.textContent = determineStatus(now);
-        timerInterval = setInterval(updateTracker, 1000);
-
-        // Add temporary record to attendanceRecords
-        const tempRecord = {
-            employee_id: employeeId,
-            date: now.toISOString().split('T')[0],
-            clock_in: formatTime(now),
-            clock_out: null,
-            duration: '0h 0m',
-            status: determineStatus(now)
-        };
-        attendanceRecords.unshift(tempRecord); // Add to the start of the array
-        updateAttendanceTable(); // Update table immediately
-
-        // Send clock-in record to server
-        try {
-            console.log('Sending employeeId:', employeeId);
- const response = await fetch('http://localhost:3000/api/attendance', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        employeeId: employeeId,
-        date: now.toISOString().split('T')[0],
-        clockIn: formatTime(now),
-        clockOut: null,
-        duration: null,
-        status: determineStatus(now)
-    })
- });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to save clock-in record');
-            }
-        } catch (error) {
-            console.error('Error saving clock-in record:', error);
-            alert(`Error: ${error.message}`);
-            // Optionally, revert UI changes if server save fails
-            isClockedIn = false;
-            clockBtn.disabled = false;
-            return;
-        }
-
-        clockBtn.disabled = false;
-    } else {
-        const confirmed = confirm("Are you sure you want to clock out?");
-        if (!confirmed) {
-            clockBtn.disabled = false;
-            return;
-        }
-
-        clearInterval(timerInterval);
-        const duration = calculateDuration(clockInTime, now);
-        const status = determineStatus(clockInTime);
-        const updateRecord = {
-            employeeId: employeeId,
-            date: now.toISOString().split('T')[0],
-            clockIn: formatTime(clockInTime),
-            clockOut: formatTime(now),
-            duration: duration,
-            status: status
-        };
-
-        try {
-            // Update existing record
-            const response = await fetch(`http://localhost:3000/api/attendance/${employeeId}/${updateRecord.date}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updateRecord)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to update attendance record');
-            }
-
-            // Fetch updated records from server
-            await fetchAttendanceRecords(employeeId);
-        } catch (error) {
-            console.error('Error updating attendance record:', error);
-            alert(`Error: ${error.message}`);
-            clockBtn.disabled = false;
-            return; // Don't reset UI if server update fails
-        }
-
-        // Reset UI
-        isClockedIn = false;
-        clockInTime = null;
-        clockIcon.classList.remove('fa-user-check');
-        clockIcon.classList.add('fa-fingerprint');
-        clockBtn.classList.remove('clock-out');
-        clockBtn.classList.add('clock-in');
-        clockStatus.textContent = 'Ready to Start';
-        clockMessage.textContent = 'Your workday begins here';
-        statusCircle.classList.remove('active');
-        trackerDisplay.textContent = '00:00:00';
-        arrivalTimeElement.textContent = '--:--';
-        currentStatusElement.textContent = 'Not Started';
-        clockBtn.disabled = false;
-    }
-}
-
-function updateAttendanceTable() {
-    attendanceTableBody.innerHTML = '';
-    const recordsToShow = attendanceRecords.slice(0, 7);
-    recordsToShow.forEach(record => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${new Date(record.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-            <td>${record.clock_in || '--:--'}</td>
-            <td>${record.clock_out || '--:--'}</td>
-            <td>${record.duration || '0h 0m'}</td>
-            <td><span class="status status-${record.status}">${record.status.replace('-', ' ')}</span></td>
-        `;
-        attendanceTableBody.appendChild(row);
-    });
-}
-
-function updateMonthlyChart() { 
-    const monthlyData = {};
-    const currentYear = new Date().getFullYear();
-    
-    // Count working days per month
-    attendanceRecords.forEach(record => {
-        const date = new Date(record.date);
-        if (date.getFullYear() === currentYear) {
-            const month = date.getMonth();
-            const monthName = date.toLocaleString('default', { month: 'short' });
-            
-            if (!monthlyData[month]) {
-                monthlyData[month] = {
-                    monthName: monthName,
-                    workingDays: 0
-                };
-            }
-            
-            // Only count as working day if there's a clock-in record
-            if (record.clock_in) {
-                monthlyData[month].workingDays++;
-            }
-        }
-    });
-
-    // Prepare data for chart
-    const months = [];
-    const workingDays = [];
-    const colors = [];
-    
-    for (let i = 0; i < 12; i++) {
-        const monthData = monthlyData[i] || {
-            monthName: new Date(currentYear, i, 1).toLocaleString('default', { month: 'short' }),
-            workingDays: 0
-        };
-        
-        months.push(monthData.monthName);
-        workingDays.push(monthData.workingDays);
-        
-        // Different color based on working days (you can adjust these thresholds)
-        colors.push(monthData.workingDays >= 20 ? 'rgba(34, 197, 94, 0.5)' : 
-                   monthData.workingDays >= 15 ? 'rgba(234, 179, 8, 0.5)' : 
-                   'rgba(239, 68, 68, 0.5)');
-    }
-
-    const ctx = document.getElementById('monthlyChart').getContext('2d');
-    
-    if (monthlyChart) {
-        monthlyChart.data.labels = months;
-        monthlyChart.data.datasets[0].data = workingDays;
-        monthlyChart.data.datasets[0].backgroundColor = colors;
-        monthlyChart.update();
-    } else {
-        monthlyChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [{
-                    label: 'Working Days',
-                    data: workingDays,
-                    backgroundColor: colors,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 0.5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Days'
-                        },
-                        max: 31 // Since maximum days in a month is 31
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Month'
-                        }
+                if (todayRecord && todayRecord.clock_in) {
+                    isClockedIn = true;
+                    clockInTime = new Date(`${today}T${todayRecord.clock_in}`);
+                    clockIcon.classList.remove('fa-fingerprint');
+                    clockIcon.classList.add('fa-user-check');
+                    clockBtn.classList.remove('clock-in');
+                    clockBtn.classList.add('clock-out');
+                    clockStatus.textContent = 'Working';
+                    clockMessage.textContent = 'Time is being tracked';
+                    statusCircle.classList.add('active');
+                    arrivalTimeElement.textContent = todayRecord.clock_in || '--:--';
+                    currentStatusElement.textContent = todayRecord.status || 'Not Started';
+                    if (!todayRecord.clock_out) {
+                        timerInterval = setInterval(updateTracker, 1000);
+                    } else {
+                        trackerDisplay.textContent = todayRecord.duration || '0h 0m';
                     }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.parsed.y} working days`;
-                            }
-                        }
-                    },
-                    legend: {
-                        display: false
-                    }
+                } else {
+                    resetClockUI();
+                }
+
+                if (monthViewBtn.classList.contains('active')) {
+                    updateMonthlyChart();
+                }
+            } catch (error) {
+                console.error('Error fetching attendance records:', error);
+                empIdError.textContent = 'Failed to load attendance records. Please try again later.';
+                empIdError.style.display = 'block';
+            } finally {
+                isFetching = false;
+                if (empIdInput.value.match(/^ATS0(?!000)\d{3}$/)) {
+                    clockBtn.disabled = false;
                 }
             }
+        }
+
+        function resetClockUI() {
+            isClockedIn = false;
+            clockInTime = null;
+            clearInterval(timerInterval);
+            clockIcon.classList.remove('fa-user-check');
+            clockIcon.classList.add('fa-fingerprint');
+            clockBtn.classList.remove('clock-out');
+            clockBtn.classList.add('clock-in');
+            clockStatus.textContent = 'Ready to Start';
+            clockMessage.textContent = 'Your workday begins here';
+            statusCircle.classList.remove('active');
+            trackerDisplay.textContent = '00:00:00';
+            arrivalTimeElement.textContent = '--:--';
+            currentStatusElement.textContent = 'Not Started';
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            currentTimeElement.textContent = now.toLocaleTimeString('en-US', timeOptions);
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElement.textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+
+        function formatDuration(milliseconds) {
+            const seconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+            return [hours, minutes, remainingSeconds]
+                .map(num => num.toString().padStart(2, '0'))
+                .join(':');
+        }
+
+        function calculateDuration(startTime, endTime) {
+            const diff = endTime - startTime;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            return `${hours}h ${minutes}m`;
+        }
+
+        function parseDuration(durationStr) {
+            if (!durationStr || durationStr === '0h 0m') return 0;
+            const [hoursStr, minutesStr] = durationStr.split('h ');
+            const hours = parseInt(hoursStr);
+            const minutes = parseInt(minutesStr.replace('m', ''));
+            return hours * 60 + minutes;
+        }
+
+        function determineStatus(clockInTime) {
+            const clockInHour = clockInTime.getHours();
+            const clockInMinute = clockInTime.getMinutes();
+            if (clockInHour < 10 || (clockInHour === 10 && clockInMinute <= 0)) {
+                return 'present';
+            } else if (clockInHour === 10 && clockInMinute <= 15) {
+                return 'late';
+            } else {
+                return 'late';
+            }
+        }
+
+        function formatTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        function updateTracker() {
+            if (clockInTime) {
+                const now = new Date();
+                const duration = now - clockInTime;
+                trackerDisplay.textContent = formatDuration(duration);
+            }
+        }
+
+        async function handleClockInOut() {
+            const now = new Date();
+            const employeeId = empIdInput.value.trim();
+            clockBtn.disabled = true;
+
+            if (!isClockedIn) {
+                // Check server for today's record
+                try {
+                    const today = now.toISOString().split('T')[0];
+                    const todayResponse = await fetch(`http://localhost:3000/api/attendance/today/${encodeURIComponent(employeeId)}`);
+                    if (todayResponse.ok) {
+                        const todayRecord = await todayResponse.json();
+                        empIdError.textContent = 'You have already clocked in for today.';
+                        empIdError.style.display = 'block';
+                        clockBtn.disabled = false;
+                        return;
+                    }
+                } catch (error) {
+                    if (error.message.includes('No record found for today')) {
+                        // Proceed with clock-in
+                    } else {
+                        console.error('Error checking today\'s record:', error);
+                        empIdError.textContent = 'Failed to check today\'s record. Please try again.';
+                        empIdError.style.display = 'block';
+                        clockBtn.disabled = false;
+                        return;
+                    }
+                }
+
+                isClockedIn = true;
+                clockInTime = now;
+                clockIcon.classList.remove('fa-fingerprint');
+                clockIcon.classList.add('fa-user-check');
+                clockBtn.classList.remove('clock-in');
+                clockBtn.classList.add('clock-out');
+                clockStatus.textContent = 'Working';
+                clockMessage.textContent = 'Time is being tracked';
+                statusCircle.classList.add('active');
+                arrivalTimeElement.textContent = formatTime(now);
+                currentStatusElement.textContent = determineStatus(now);
+                timerInterval = setInterval(updateTracker, 1000);
+
+                const tempRecord = {
+                    employee_id: employeeId,
+                    date: now.toISOString().split('T')[0],
+                    clock_in: formatTime(now),
+                    clock_out: null,
+                    duration: '0h 0m',
+                    status: determineStatus(now)
+                };
+                attendanceRecords.unshift(tempRecord);
+                updateAttendanceTable();
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/attendance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            employeeId: employeeId,
+                            date: now.toISOString().split('T')[0],
+                            clockIn: formatTime(now)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to save clock-in record');
+                    }
+                } catch (error) {
+                    console.error('Error saving clock-in record:', error);
+                    empIdError.textContent = `Error: ${error.message}`;
+                    empIdError.style.display = 'block';
+                    isClockedIn = false;
+                    resetClockUI();
+                    clockBtn.disabled = false;
+                    attendanceRecords.shift();
+                    updateAttendanceTable();
+                    return;
+                }
+            } else {
+                const confirmed = confirm("Are you sure you want to clock out?");
+                if (!confirmed) {
+                    clockBtn.disabled = false;
+                    return;
+                }
+
+                clearInterval(timerInterval);
+                const duration = calculateDuration(clockInTime, now);
+                const today = now.toISOString().split('T')[0];
+
+                try {
+                    const response = await fetch(`http://localhost:3000/api/attendance/${employeeId}/${today}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clockOut: formatTime(now) })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to update attendance record');
+                    }
+
+                    await fetchAttendanceRecords(employeeId);
+                } catch (error) {
+                    console.error('Error updating attendance record:', error);
+                    empIdError.textContent = `Error: ${error.message}`;
+                    empIdError.style.display = 'block';
+                    clockBtn.disabled = false;
+                    return;
+                }
+
+                resetClockUI();
+            }
+            clockBtn.disabled = false;
+        }
+
+        function updateAttendanceTable() {
+            attendanceTableBody.innerHTML = '';
+            const recordsToShow = attendanceRecords.slice(0, 7);
+            recordsToShow.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(record.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    <td>${record.clock_in || '--:--'}</td>
+                    <td>${record.clock_out || '--:--'}</td>
+                    <td>${record.duration || '0h 0m'}</td>
+                    <td><span class="status status-${record.status}">${record.status.replace('-', ' ')}</span></td>
+                `;
+                attendanceTableBody.appendChild(row);
+            });
+        }
+
+        function updateMonthlyChart() {
+            const monthlyData = {};
+            const currentYear = new Date().getFullYear();
+            
+            attendanceRecords.forEach(record => {
+                const date = new Date(record.date);
+                if (date.getFullYear() === currentYear) {
+                    const month = date.getMonth();
+                    const monthName = date.toLocaleString('default', { month: 'short' });
+                    
+                    if (!monthlyData[month]) {
+                        monthlyData[month] = {
+                            monthName: monthName,
+                            workingDays: 0
+                        };
+                    }
+                    
+                    if (record.clock_in) {
+                        monthlyData[month].workingDays++;
+                    }
+                }
+            });
+
+            const months = [];
+            const workingDays = [];
+            const colors = [];
+            
+            for (let i = 0; i < 12; i++) {
+                const monthData = monthlyData[i] || {
+                    monthName: new Date(currentYear, i, 1).toLocaleString('default', { month: 'short' }),
+                    workingDays: 0
+                };
+                
+                months.push(monthData.monthName);
+                workingDays.push(monthData.workingDays);
+                colors.push(monthData.workingDays >= 20 ? 'rgba(34, 197, 94, 0.5)' : 
+                           monthData.workingDays >= 15 ? 'rgba(234, 179, 8, 0.5)' : 
+                           'rgba(239, 68, 68, 0.5)');
+            }
+
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            
+            if (monthlyChart) {
+                monthlyChart.data.labels = months;
+                monthlyChart.data.datasets[0].data = workingDays;
+                monthlyChart.data.datasets[0].backgroundColor = colors;
+                monthlyChart.update();
+            } else {
+                monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Working Days',
+                            data: workingDays,
+                            backgroundColor: colors,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 0.5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Number of Days' },
+                                max: 31
+                            },
+                            x: { title: { display: true, text: 'Month' } }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.parsed.y} working days`;
+                                    }
+                                }
+                            },
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+
+        function showWeekView() {
+            attendanceTable.style.display = 'block';
+            attendanceGraph.style.display = 'none';
+            weekViewBtn.classList.add('active');
+            monthViewBtn.classList.remove('active');
+            updateAttendanceTable();
+        }
+
+        function showMonthView() {
+            attendanceTable.style.display = 'none';
+            attendanceGraph.style.display = 'block';
+            monthViewBtn.classList.add('active');
+            weekViewBtn.classList.remove('active');
+            updateMonthlyChart();
+        }
+
+        function validateEmployeeId() {
+            const empId = empIdInput.value.trim();
+            const pattern = /^ATS0(?!000)\d{3}$/;
+            const isValid = pattern.test(empId);
+            if (empId === '') {
+                empIdError.textContent = 'Employee ID is required';
+                empIdError.style.display = 'block';
+                clockBtn.disabled = true;
+                attendanceRecords = [];
+                updateAttendanceTable();
+            } else if (!isValid) {
+                empIdError.textContent = 'ID must start with ATS0 followed by 3 digits (e.g., ATS0987)';
+                empIdError.style.display = 'block';
+                clockBtn.disabled = true;
+                attendanceRecords = [];
+                updateAttendanceTable();
+            } else {
+                empIdError.style.display = 'none';
+                fetchAttendanceRecords(empId);
+            }
+        }
+
+        clockBtn.addEventListener('click', handleClockInOut);
+        weekViewBtn.addEventListener('click', showWeekView);
+        monthViewBtn.addEventListener('click', showMonthView);
+        empIdInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+            validateEmployeeId();
         });
-    }
-}
+        empIdInput.addEventListener('blur', validateEmployeeId);
+        empIdInput.addEventListener('change', validateEmployeeId);
 
-function showWeekView() {
-    attendanceTable.style.display = 'block';
-    attendanceGraph.style.display = 'none';
-    weekViewBtn.classList.add('active');
-    monthViewBtn.classList.remove('active');
-    updateAttendanceTable();
-}
-
-function showMonthView() {
-    attendanceTable.style.display = 'none';
-    attendanceGraph.style.display = 'block';
-    monthViewBtn.classList.add('active');
-    weekViewBtn.classList.remove('active');
-    updateMonthlyChart();
-}
-
-function validateEmployeeId() {
-    const empId = empIdInput.value.trim();
-    const pattern = /^ATS0(?!000)\d{3}$/;
-    const isValid = pattern.test(empId);
-    if (empId === '') {
-        errorElement.textContent = 'Employee ID is required';
-        errorElement.style.display = 'block';
-        clockBtn.disabled = true;
-    } else if (!isValid) {
-        errorElement.textContent = 'ID must start with ATS0 followed by 3 digits (e.g., ATS0987)';
-        errorElement.style.display = 'block';
-        clockBtn.disabled = true;
-    } else {
-        errorElement.style.display = 'none';
-        clockBtn.disabled = false;
-        fetchAttendanceRecords(empId);
-    }
-}
-
-clockBtn.addEventListener('click', handleClockInOut);
-weekViewBtn.addEventListener('click', showWeekView);
-monthViewBtn.addEventListener('click', showMonthView);
-empIdInput.addEventListener('input', function() {
-    this.value = this.value.toUpperCase();
-    validateEmployeeId();
-});
-empIdInput.addEventListener('blur', validateEmployeeId);
-empIdInput.addEventListener('change', validateEmployeeId);
-
-updateDateTime();
-setInterval(updateDateTime, 1000);
-validateEmployeeId();
-</script>
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        validateEmployeeId();
+    </script>
 </body>
 </html>

@@ -6,335 +6,333 @@
     <title>Admin Dashboard - Attendance System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<style>
-    :root {
-        --bg-primary: #f8fafc;
-        --bg-secondary: #ffffff;
-        --bg-tertiary: #f1f5f9;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --accent-primary: #4f46e5;
-        --accent-hover: #4338ca;
-        --success: #10b981;
-        --warning: #f59e0b;
-        --danger: #ef4444;
-        --info: #3b82f6;
-        --card-bg: #ffffff;
-        --border-color: #e2e8f0;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background-color: var(--bg-primary);
-        color: var(--text-primary);
-        line-height: 1.5;
-    }
-
-    .app-container {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    .main-content {
-        flex: 1;
-        padding: 2rem;
-        overflow-y: auto;
-    }
-
-    header {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
-        padding: 1.5rem 2rem;
-        color: white;
-        box-shadow: var(--shadow-md);
-        position: relative;
-        overflow: hidden;
-        text-align: center;
-    }
-
-    header::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-        transform: rotate(30deg);
-    }
-
-    header h1 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        position: relative;
-    }
-
-    header p {
-        font-size: 1rem;
-        opacity: 0.9;
-        position: relative;
-    }
-
-    .top-bar {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-
-    .search-bar {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        background-color: var(--bg-secondary);
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.75rem;
-        width: 500px;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        border: 1px solid var(--border-color);
-    }
-
-    .search-bar:hover {
-        box-shadow: var(--shadow-md);
-    }
-
-    .search-bar:focus-within {
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-    }
-
-    .search-bar i {
-        color: var(--text-secondary);
-        font-size: 1rem;
-    }
-
-    .search-bar input {
-        background: none;
-        border: none;
-        color: var(--text-primary);
-        font-size: 0.9375rem;
-        width: 100%;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .search-bar input:focus {
-        outline: none;
-    }
-
-    .search-bar input::placeholder {
-        color: var(--text-secondary);
-    }
-
-    .main-grid {
-        display: grid;
-        gap: 1.75rem;
-    }
-
-    .attendance-overview {
-        background-color: var(--card-bg);
-        border-radius: 1rem;
-        padding: 1.75rem;
-        box-shadow: var(--shadow-md);
-        transition: var(--transition);
-        border: 1px solid var(--border-color);
-    }
-
-    .attendance-overview:hover {
-        box-shadow: var(--shadow-lg);
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.75rem;
-    }
-
-    .card-header h2 {
-        font-size: 1.375rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .card-header h2 i {
-        color: var(--accent-primary);
-        font-size: 1.25rem;
-    }
-
-    .table-container {
-        overflow-x: auto;
-        border-radius: 0.75rem;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        min-width: 800px;
-    }
-
-    th, td {
-        padding: 1rem 1.25rem;
-        text-align: left;
-        font-size: 0.9375rem;
-    }
-
-    th {
-        background-color: var(--accent-primary);
-        color: white;
-        font-weight: 500;
-        position: sticky;
-        top: 0;
-    }
-
-    th:first-child {
-        border-top-left-radius: 0.75rem;
-    }
-
-    th:last-child {
-        border-top-right-radius: 0.75rem;
-    }
-
-    td {
-        border-bottom: 1px solid var(--border-color);
-        background-color: var(--bg-secondary);
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    tr:hover td {
-        background-color: var(--bg-tertiary);
-    }
-
-    .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.375rem 0.875rem;
-        border-radius: 9999px;
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-
-    .status-present {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-    }
-
-    .status-present i {
-        color: var(--success);
-    }
-
-    .status-late {
-        background-color: rgba(245, 158, 11, 0.1);
-        color: var(--warning);
-    }
-
-    .status-late i {
-        color: var(--warning);
-    }
-
-    .status-absent {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-    }
-
-    .status-absent i {
-        color: var(--danger);
-    }
-
-    .no-records {
-        text-align: center;
-        padding: 2rem;
-        color: var(--text-secondary);
-    }
-
-    .no-records i {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: var(--text-secondary);
-        opacity: 0.5;
-    }
-
-    /* Animation for table rows */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    tbody tr {
-        animation: fadeIn 0.3s ease-out forwards;
-        opacity: 0;
-    }
-
-    tbody tr:nth-child(1) { animation-delay: 0.1s; }
-    tbody tr:nth-child(2) { animation-delay: 0.2s; }
-    tbody tr:nth-child(3) { animation-delay: 0.3s; }
-    tbody tr:nth-child(4) { animation-delay: 0.4s; }
-    tbody tr:nth-child(5) { animation-delay: 0.5s; }
-    tbody tr:nth-child(n+6) { animation-delay: 0.6s; }
-
-    /* Responsive adjustments */
-    @media (max-width: 1280px) {
-        .main-grid {
-            grid-template-columns: 1fr;
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-primary: #4f46e5;
+            --accent-hover: #4338ca;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-    }
 
-    @media (max-width: 768px) {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
         .main-content {
-            padding: 1.25rem;
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
         }
 
-        .top-bar {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1.25rem;
+        header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 1.5rem 2rem;
+            color: white;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
         }
 
-        .search-bar {
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
             width: 100%;
-        }
-
-        .attendance-overview {
-            padding: 1.25rem;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
         }
 
         header h1 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            position: relative;
         }
-    }
 
-    @media (max-width: 480px) {
-        header {
-            padding: 1.25rem 1.5rem;
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
         }
-        
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background-color: var(--bg-secondary);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            width: 500px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-bar:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-bar:focus-within {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .search-bar i {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .main-grid {
+            display: grid;
+            gap: 1.75rem;
+        }
+
+        .attendance-overview {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.75rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .attendance-overview:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
         .card-header h2 {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header h2 i {
+            color: var(--accent-primary);
             font-size: 1.25rem;
         }
-        
-        th, td {
-            padding: 0.75rem 1rem;
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
         }
-    }
-</style>
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-size: 0.9375rem;
+        }
+
+        th {
+            background-color: var(--accent-primary);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        th:first-child {
+            border-top-left-radius: 0.75rem;
+        }
+
+        th:last-child {
+            border-top-right-radius: 0.75rem;
+        }
+
+        td {
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-tertiary);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .status-present {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-present i {
+            color: var(--success);
+        }
+
+        .status-late {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-late i {
+            color: var(--warning);
+        }
+
+        .status-absent {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-absent i {
+            color: var(--danger);
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .no-records i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        tbody tr {
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+        }
+
+        tbody tr:nth-child(1) { animation-delay: 0.1s; }
+        tbody tr:nth-child(2) { animation-delay: 0.2s; }
+        tbody tr:nth-child(3) { animation-delay: 0.3s; }
+        tbody tr:nth-child(4) { animation-delay: 0.4s; }
+        tbody tr:nth-child(5) { animation-delay: 0.5s; }
+        tbody tr:nth-child(n+6) { animation-delay: 0.6s; }
+
+        @media (max-width: 1280px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.25rem;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.25rem;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .attendance-overview {
+                padding: 1.25rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 1.25rem 1.5rem;
+            }
+            
+            .card-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
 <body>
     <header>
         <h1><i class="fas fa-calendar-check"></i> Attendance Management</h1>
@@ -345,10 +343,9 @@
             <header class="top-bar">
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search by Employee ID ...">
+                    <input type="text" id="searchInput" placeholder="Search by Employee ID...">
                 </div>
             </header>
-
             <div class="main-grid">
                 <section class="attendance-overview">
                     <div class="card-header">
@@ -366,152 +363,138 @@
                                     <th><i class="fas fa-info-circle"></i> Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="attendanceTableBody">
-                                <!-- Rows will be populated here -->
-                            </tbody>
+                            <tbody id="attendanceTableBody"></tbody>
                         </table>
                     </div>
                 </section>
             </div>
         </main>
     </div>
-    
-<script>
-    let attendanceRecords = [];
+    <script>
+        let attendanceRecords = [];
 
-document.addEventListener('DOMContentLoaded', async function() {
-    await fetchAttendanceRecords();
-    populateTable(attendanceRecords);
-    
-    // Start polling every 10 seconds
-    setInterval(fetchAttendanceRecords, 10000);
-    
-    // Add animation to header
-    const header = document.querySelector('header');
-    header.style.opacity = '0';
-    header.style.transform = 'translateY(-20px)';
-    setTimeout(() => {
-        header.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        header.style.opacity = '1';
-        header.style.transform = 'translateY(0)';
-    }, 100);
-});
-
-async function fetchAttendanceRecords() {
-    try {
-        const searchTerm = searchInput.value.trim();
-        const url = searchTerm 
-            ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
-            : 'http://localhost:3000/api/attendance';
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Failed to fetch attendance records');
-        }
-        attendanceRecords = await response.json();
-        populateTable(attendanceRecords);
-    } catch (error) {
-        console.error('Error fetching attendance records:', error);
-        showNotification('Failed to load attendance records. Please try again later.', 'error');
-    }
-}
-
-function populateTable(data) {
-    const tableBody = document.getElementById('attendanceTableBody');
-    tableBody.innerHTML = '';
-
-    if (data.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td colspan="6" class="no-records">
-                <i class="far fa-folder-open"></i>
-                <div>No attendance records found</div>
-            </td>`;
-        tableBody.appendChild(row);
-        return;
-    }
-
-    data.forEach((record, index) => {
-        try {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><i class="fas fa-user-tie"></i> ${record.employee_id || 'Unknown'}</td>
-                <td>${formatDate(record.date)}</td>
-                <td>${record.clock_in || '--:--'}</td>
-                <td>${record.clock_out || '--:--'}</td>
-                <td>${record.duration || '0h 0m'}</td>
-                <td>
-                    <span class="status status-${record.status}">
-                        <i class="${getStatusIcon(record.status)}"></i>
-                        ${formatStatusText(record.status)}
-                    </span>
-                </td>
-            `;
-            row.style.animationDelay = `${index * 0.1}s`;
-            tableBody.appendChild(row);
-        } catch (error) {
-            console.error('Error rendering record:', record, error);
-        }
-    });
-}
-
-function getStatusIcon(status) {
-    switch(status) {
-        case 'present': return 'fas fa-check-circle';
-        case 'late': return 'fas fa-clock';
-        case 'absent': return 'fas fa-times-circle';
-        default: return 'fas fa-question-circle';
-    }
-}
-
-function formatStatusText(status) {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
-}
-
-function formatDate(dateString) {
-    try {
-        const date = new Date(dateString);
-        return isNaN(date) ? dateString : date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
+        document.addEventListener('DOMContentLoaded', async function() {
+            await fetchAttendanceRecords();
+            populateTable(attendanceRecords);
+            setInterval(fetchAttendanceRecords, 10000);
+            const header = document.querySelector('header');
+            header.style.opacity = '0';
+            header.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                header.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                header.style.opacity = '1';
+                header.style.transform = 'translateY(0)';
+            }, 100);
         });
-    } catch {
-        return dateString;
-    }
-}
 
-function filterRecords(searchTerm) {
-    const filteredRecords = attendanceRecords.filter(record =>
-        String(record.employee_id).toUpperCase().includes(searchTerm.toUpperCase()) ||
-        (record.employee_name && record.employee_name.toUpperCase().includes(searchTerm.toUpperCase()))
-    );
-    populateTable(filteredRecords);
-}
-
-function showNotification(message, type = 'info') {
-    // You can implement a nice notification system here
-    alert(message); // Temporary simple alert
-}
-
-const searchInput = document.getElementById('searchInput');
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.trim();
-        filterRecords(searchTerm);
-    });
-    
-    // Add debounce to prevent too many requests
-    let debounceTimer;
-    searchInput.addEventListener('input', (e) => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            const searchTerm = e.target.value.trim();
-            if (searchTerm.length > 2 || searchTerm.length === 0) {
-                fetchAttendanceRecords();
+        async function fetchAttendanceRecords() {
+            try {
+                const searchTerm = searchInput.value.trim();
+                const url = searchTerm 
+                    ? `http://localhost:3000/api/attendance?employee_id=${encodeURIComponent(searchTerm)}`
+                    : 'http://localhost:3000/api/attendance';
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch attendance records');
+                }
+                attendanceRecords = await response.json();
+                populateTable(attendanceRecords);
+            } catch (error) {
+                console.error('Error fetching attendance records:', error);
+                showNotification('Failed to load attendance records. Please try again later.', 'error');
             }
-        }, 500);
-    });
-}
-</script>
+        }
+
+        function populateTable(data) {
+            const tableBody = document.getElementById('attendanceTableBody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-records">
+                            <i class="far fa-folder-open"></i>
+                            <div>No attendance records found</div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            data.forEach((record, index) => {
+                try {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><i class="fas fa-user-tie"></i> ${record.employee_id || 'Unknown'}</td>
+                        <td>${formatDate(record.date)}</td>
+                        <td>${record.clock_in || '--:--'}</td>
+                        <td>${record.clock_out || '--:--'}</td>
+                        <td>${record.duration || '0h 0m'}</td>
+                        <td>
+                            <span class="status status-${record.status}">
+                                <i class="${getStatusIcon(record.status)}"></i>
+                                ${formatStatusText(record.status)}
+                            </span>
+                        </td>
+                    `;
+                    row.style.animationDelay = `${index * 0.1}s`;
+                    tableBody.appendChild(row);
+                } catch (error) {
+                    console.error('Error rendering record:', record, error);
+                }
+            });
+        }
+
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'present': return 'fas fa-check-circle';
+                case 'late': return 'fas fa-clock';
+                case 'absent': return 'fas fa-times-circle';
+                default: return 'fas fa-question-circle';
+            }
+        }
+
+        function formatStatusText(status) {
+            return status ? status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ') : 'Unknown';
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return isNaN(date) ? dateString : date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            } catch {
+                return dateString;
+            }
+        }
+
+        function filterRecords(searchTerm) {
+            const filteredRecords = attendanceRecords.filter(record =>
+                String(record.employee_id).toUpperCase().includes(searchTerm.toUpperCase())
+            );
+            populateTable(filteredRecords);
+        }
+
+        function showNotification(message, type = 'info') {
+            alert(message);
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const searchTerm = e.target.value.trim();
+                    filterRecords(searchTerm);
+                    if (searchTerm.length > 2 || searchTerm.length === 0) {
+                        fetchAttendanceRecords();
+                    }
+                }, 500);
+            });
+        }
+    </script>
 </body>
 </html>

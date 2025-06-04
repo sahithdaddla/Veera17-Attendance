@@ -1,180 +1,235 @@
+require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-// Load environment variables from .env file
-dotenv.config();
+const { Pool } = require('pg');
+const moment = require('moment');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS configuration to allow multiple origins
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000', 'http://localhost:5500'];
-app.use(cors({ origin: '*' }));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// PostgreSQL connection configuration
+// PostgreSQL connection
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'attendance_system',
-    password: 'Veera@0134',
-    port: 5432,
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'attendance_system',
+    password: process.env.DB_PASSWORD || 'Veera@0134',
+    port: process.env.DB_PORT || 5432,
 });
 
-// Connect to PostgreSQL
-pool.connect((err) => {
+// Test database connection
+pool.connect((err, client, release) => {
     if (err) {
-        console.error('Error connecting to PostgreSQL:', err.stack);
-        return;
+        return console.error('Error acquiring client', err.stack);
     }
     console.log('Connected to PostgreSQL database');
+    release();
 });
 
-// Create attendance table if it doesn't exist
-const createTableQuery = `
-DROP TABLE IF EXISTS attendance;
-CREATE TABLE attendance (
-    id SERIAL PRIMARY KEY,
-    employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0(?!000)\\d{3}$'),
-    date DATE NOT NULL,
-    clock_in TIME,
-    clock_out TIME,
-    duration VARCHAR(10),
-    status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'late', 'absent')),
-    UNIQUE(employee_id, date)
-);
-`;
+// Create or update attendance table
+async function initializeDatabase() {
+    try {
+        // Create attendance table if it doesn't exist
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS attendance (
+                id SERIAL PRIMARY KEY,
+                employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0[0-9]{3}$'),
+                date DATE NOT NULL,
+                clock_in TIME,
+                clock_out TIME,
+                duration VARCHAR(20),
+                status VARCHAR(20),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(employee_id, date)
+            );
+        `);
 
-pool.query(createTableQuery, (err, res) => {
-    if (err) {
-        console.error('Error creating table:', err.stack);
-    } else {
-        console.log('Attendance table ready');
+        // Check if updated_at column exists, and add it if missing
+        const columnCheck = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'attendance' AND column_name = 'updated_at';
+        `);
+
+        if (columnCheck.rows.length === 0) {
+            await pool.query(`
+                ALTER TABLE attendance 
+                ADD COLUMN updated_at TIMESTAMP DEFAULT NOW();
+            `);
+            console.log('Added updated_at column to attendance table');
+        }
+
+        console.log('Attendance table initialized');
+    } catch (error) {
+        console.error('Error initializing database:', error);
     }
-});
+}
 
-// GET all attendance records, optionally filtered by employee_id
+initializeDatabase();
+
+// Helper functions
+function calculateDuration(clockIn, clockOut) {
+    if (!clockIn || !clockOut) return '0h 0m';
+    
+    const start = moment(clockIn, 'HH:mm:ss');
+    const end = moment(clockOut, 'HH:mm:ss');
+    const duration = moment.duration(end.diff(start));
+    
+    const hours = Math.floor(duration.asHours());
+    const minutes = duration.minutes();
+    return `${hours}h ${minutes}m`;
+}
+
+function determineStatus(clockIn) {
+    if (!clockIn) return 'absent';
+    
+    const [hours, minutes] = clockIn.split(':').map(Number);
+    
+    if (hours < 10 || (hours === 10 && minutes <= 0)) {
+        return 'present';
+    } else if (hours === 10 && minutes <= 15) {
+        return 'late';
+    } else {
+        return 'late';
+    }
+}
+
+// API Routes for Attendance
+
+// Get all attendance records (with optional employee_id filter)
 app.get('/api/attendance', async (req, res) => {
     try {
         const { employee_id } = req.query;
-        let query = 'SELECT * FROM attendance ORDER BY date DESC';
-        let values = [];
+        let query = 'SELECT * FROM attendance';
+        let params = [];
+        
         if (employee_id) {
-            query = 'SELECT * FROM attendance WHERE employee_id = $1 ORDER BY date DESC';
-            values = [employee_id];
+            query += ' WHERE employee_id = $1';
+            params.push(employee_id);
         }
-        const result = await pool.query(query, values);
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Error fetching attendance records:', err.stack);
-        res.status(500).json({ error: 'Internal server error' });
+        
+        query += ' ORDER BY date DESC, clock_in DESC';
+        
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching attendance records:', error);
+        res.status(500).json({ error: 'Failed to fetch attendance records' });
     }
 });
 
-// POST a new attendance record
+// Get today's attendance record for an employee
+app.get('/api/attendance/today/:employee_id', async (req, res) => {
+    try {
+        const today = moment().format('YYYY-MM-DD');
+        const { rows } = await pool.query(
+            'SELECT * FROM attendance WHERE employee_id = $1 AND date = $2',
+            [req.params.employee_id, today]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No record found for today' });
+        }
+        
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Error fetching today\'s attendance:', error);
+        res.status(500).json({ error: 'Failed to fetch today\'s attendance' });
+    }
+});
+
+// Create new attendance record (clock in)
 app.post('/api/attendance', async (req, res) => {
-    const { employeeId, date, clockIn, clockOut, duration, status } = req.body;
-    console.log('Received POST request with employeeId:', employeeId);
-
-    // Validate inputs
-    if (!employeeId || !/^ATS0(?!000)\d{3}$/.test(employeeId)) {
-        console.log('Invalid employeeId rejected:', employeeId);
-        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 3 digits (e.g., ATS0123)' });
-    }
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return res.status(400).json({ error: 'Invalid date format' });
-    }
-    if (!status || !['present', 'late', 'absent'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status. Must be present, late, or absent' });
-    }
-    if (clockIn && !/^\d{2}:\d{2}$/.test(clockIn)) {
-        return res.status(400).json({ error: 'Invalid clockIn time format' });
-    }
-    if (clockOut && !/^\d{2}:\d{2}$/.test(clockOut)) {
-        return res.status(400).json({ error: 'Invalid clockOut time format' });
-    }
-    if (duration && !/^\d+h \d+m$/.test(duration)) {
-        return res.status(400).json({ error: 'Invalid duration format' });
-    }
-
     try {
-        // Check for existing record
+        const { employeeId, date, clockIn } = req.body;
+        
+        // Validate employee_id format
+        if (!employeeId.match(/^ATS0[0-9]{3}$/)) {
+            return res.status(400).json({ error: 'Invalid employee ID format' });
+        }
+        
+        // Check if record already exists for this date
         const existingRecord = await pool.query(
             'SELECT * FROM attendance WHERE employee_id = $1 AND date = $2',
             [employeeId, date]
         );
+        
         if (existingRecord.rows.length > 0) {
-            return res.status(400).json({ error: 'Attendance record already exists for this Employee ID and date' });
+            return res.status(400).json({ error: 'Attendance record already exists for this date' });
         }
-
-        // Insert new record
-        const result = await pool.query(
-            `INSERT INTO attendance (employee_id, date, clock_in, clock_out, duration, status)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [employeeId, date, clockIn || null, clockOut || null, duration || null, status]
-        );
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error('Error adding attendance record:', err.stack);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// PUT to update an existing attendance record
-app.put('/api/attendance/:employeeId/:date', async (req, res) => {
-    const { employeeId, date } = req.params;
-    const { clockIn, clockOut, duration, status } = req.body;
-
-    // Validate inputs
-    if (!employeeId || !/^ATS0(?!000)\d{3}$/.test(employeeId)) {
-        console.log('Invalid employeeId rejected:', employeeId);
-        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 3 digits (e.g., ATS0123)' });
-    }
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return res.status(400).json({ error: 'Invalid date format' });
-    }
-    if (!status || !['present', 'late', 'absent'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status. Must be present, late, or absent' });
-    }
-    if (clockIn && !/^\d{2}:\d{2}$/.test(clockIn)) {
-        return res.status(400).json({ error: 'Invalid clockIn time format' });
-    }
-    if (clockOut && !/^\d{2}:\d{2}$/.test(clockOut)) {
-        return res.status(400).json({ error: 'Invalid clockOut time format' });
-    }
-    if (duration && !/^\d+h \d+m$/.test(duration)) {
-        return res.status(400).json({ error: 'Invalid duration format' });
-    }
-
-    try {
-        // Check for existing record
-        const existingRecord = await pool.query(
-            'SELECT * FROM attendance WHERE employee_id = $1 AND date = $2',
-            [employeeId, date]
-        );
-        if (existingRecord.rows.length === 0) {
-            return res.status(404).json({ error: 'Attendance record not found' });
-        }
-
-        // Update record
-        const result = await pool.query(
-            `UPDATE attendance
-             SET clock_in = $1, clock_out = $2, duration = $3, status = $4
-             WHERE employee_id = $5 AND date = $6
+        
+        const status = determineStatus(clockIn);
+        
+        const { rows } = await pool.query(
+            `INSERT INTO attendance (employee_id, date, clock_in, status)
+             VALUES ($1, $2, $3, $4)
              RETURNING *`,
-            [clockIn || null, clockOut || null, duration || null, status, employeeId, date]
+            [employeeId, date, clockIn, status]
         );
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error('Error updating attendance record:', err.stack);
-        res.status(500).json({ error: 'Internal server error' });
+        
+        res.status(201).json(rows[0]);
+    } catch (error) {
+        console.error('Error creating attendance record:', error);
+        res.status(500).json({ error: 'Failed to create attendance record' });
     }
 });
 
-// Start the server
+// Update attendance record (clock out)
+app.put('/api/attendance/:employee_id/:date', async (req, res) => {
+    try {
+        const { employee_id, date } = req.params;
+        const { clockOut } = req.body;
+        
+        // Validate employee_id format
+        if (!employee_id.match(/^ATS0[0-9]{3}$/)) {
+            return res.status(400).json({ error: 'Invalid employee ID format' });
+        }
+        
+        // Get existing record to calculate duration
+        const { rows } = await pool.query(
+            'SELECT * FROM attendance WHERE employee_id = $1 AND date = $2',
+            [employee_id, date]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+        
+        const record = rows[0];
+        
+        // Don't allow clock out if not clocked in
+        if (!record.clock_in) {
+            return res.status(400).json({ error: 'Cannot clock out without clocking in first' });
+        }
+        
+        const duration = calculateDuration(record.clock_in, clockOut);
+        
+        const updatedRecord = await pool.query(
+            `UPDATE attendance 
+             SET clock_out = $1, duration = $2, updated_at = NOW()
+             WHERE employee_id = $3 AND date = $4
+             RETURNING *`,
+            [clockOut, duration, employee_id, date]
+        );
+        
+        res.json(updatedRecord.rows[0]);
+    } catch (error) {
+        console.error('Error updating attendance record:', error);
+        res.status(500).json({ error: 'Failed to update attendance record' });
+    }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Start server
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
 });
