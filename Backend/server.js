@@ -12,6 +12,7 @@ const port = process.env.PORT || 3000;
 // CORS configuration to allow multiple origins
 const allowedOrigins = [
     'http://localhost:3000',
+    'http://localhost:5000',
 ];
 
 app.use(cors());
@@ -38,10 +39,10 @@ pool.connect((err) => {
 
 // Create attendance table if it doesn't exist
 const createTableQuery = `
-    DROP TABLE IF EXISTS attendance;
+DROP TABLE IF EXISTS attendance;
 CREATE TABLE attendance (
     id SERIAL PRIMARY KEY,
-    employee_id VARCHAR(7) NOT NULL,
+    employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0(?!000)\d{3}$'),
     date DATE NOT NULL,
     clock_in TIME,
     clock_out TIME,
