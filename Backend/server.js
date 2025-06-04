@@ -10,22 +10,18 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // CORS configuration to allow multiple origins
-const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5000',
-];
-
-app.use(cors());
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000', 'http://localhost:5500'];
+app.use(cors({ origin: '*' }));
 
 app.use(express.json());
 
 // PostgreSQL connection configuration
 const pool = new Pool({
-    user:'postgres',
-    host:'localhost',
-    database:'attendance_system',
-    password:'Veera@0134',
-    port:5432,
+    user: 'postgres',
+    host: 'localhost',
+    database: 'attendance_system',
+    password: 'Veera@0134',
+    port: 5432,
 });
 
 // Connect to PostgreSQL
@@ -42,7 +38,7 @@ const createTableQuery = `
 DROP TABLE IF EXISTS attendance;
 CREATE TABLE attendance (
     id SERIAL PRIMARY KEY,
-    employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0(?!000)\d{3}$'),
+    employee_id VARCHAR(7) NOT NULL CHECK (employee_id ~ '^ATS0(?!000)\\d{3}$'),
     date DATE NOT NULL,
     clock_in TIME,
     clock_out TIME,
@@ -81,10 +77,12 @@ app.get('/api/attendance', async (req, res) => {
 // POST a new attendance record
 app.post('/api/attendance', async (req, res) => {
     const { employeeId, date, clockIn, clockOut, duration, status } = req.body;
+    console.log('Received POST request with employeeId:', employeeId);
 
     // Validate inputs
-    if (!employeeId || !/^(ATS0(?!000)\d{3})$/.test(employeeId)) {
-        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 4 digits (e.g., ATS0987)' });
+    if (!employeeId || !/^ATS0(?!000)\d{3}$/.test(employeeId)) {
+        console.log('Invalid employeeId rejected:', employeeId);
+        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 3 digits (e.g., ATS0123)' });
     }
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return res.status(400).json({ error: 'Invalid date format' });
@@ -131,8 +129,9 @@ app.put('/api/attendance/:employeeId/:date', async (req, res) => {
     const { clockIn, clockOut, duration, status } = req.body;
 
     // Validate inputs
-    if (!employeeId || !/^(ATS0(?!000)\d{3})$/.test(employeeId)) {
-        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 4 digits (e.g., ATS0987)' });
+    if (!employeeId || !/^ATS0(?!000)\d{3}$/.test(employeeId)) {
+        console.log('Invalid employeeId rejected:', employeeId);
+        return res.status(400).json({ error: 'Invalid Employee ID. Must be ATS0 followed by 3 digits (e.g., ATS0123)' });
     }
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return res.status(400).json({ error: 'Invalid date format' });

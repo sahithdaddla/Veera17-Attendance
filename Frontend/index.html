@@ -512,17 +512,17 @@ td {
             <div class="employee-profile">
                 <div class="profile-info">
                     <label for="empId">Employee ID</label>
-                    <input 
-                        type="text" 
-                        id="empId" 
-                        name="empId" 
-                        class="form-control"
-                        required 
-                        maxlength="7"
-                        pattern="^ATS0(?!000)\d{3}$" 
-                        title="Employee ID must start with ATS followed by 4 digits (e.g., ATS0987)"
-                        oninput="this.value = this.value.toUpperCase()"
-                    >
+<input 
+    type="text" 
+    id="empId" 
+    name="empId" 
+    class="form-control"
+    required 
+    maxlength="7"
+    pattern="^ATS0(?!000)\d{3}$" 
+    title="Employee ID must start with ATS0 followed by 3 digits (e.g., ATS0987)"
+    oninput="this.value = this.value.toUpperCase()"
+>
                 </div>
             </div>
 
@@ -758,18 +758,19 @@ async function handleClockInOut() {
 
         // Send clock-in record to server
         try {
-            const response = await fetch('http://localhost:3000/api/attendance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    employeeId: employeeId,
-                    date: now.toISOString().split('T')[0],
-                    clockIn: formatTime(now),
-                    clockOut: null,
-                    duration: null,
-                    status: determineStatus(now)
-                })
-            });
+            console.log('Sending employeeId:', employeeId);
+ const response = await fetch('http://localhost:3000/api/attendance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        employeeId: employeeId,
+        date: now.toISOString().split('T')[0],
+        clockIn: formatTime(now),
+        clockOut: null,
+        duration: null,
+        status: determineStatus(now)
+    })
+ });
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -985,7 +986,7 @@ function validateEmployeeId() {
         errorElement.style.display = 'block';
         clockBtn.disabled = true;
     } else if (!isValid) {
-        errorElement.textContent = 'ID must start with ATS followed by 4 digits (e.g., ATS0987)';
+        errorElement.textContent = 'ID must start with ATS0 followed by 3 digits (e.g., ATS0987)';
         errorElement.style.display = 'block';
         clockBtn.disabled = true;
     } else {
