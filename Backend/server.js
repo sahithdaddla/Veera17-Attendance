@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 const moment = require('moment');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3063;
 
 // Middleware
 app.use(cors());
@@ -14,9 +14,9 @@ app.use(express.json());
 // PostgreSQL connection
 const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || 'postgres',
     database: process.env.DB_NAME || 'attendance_system',
-    password: process.env.DB_PASSWORD || 'Veera@0134',
+    password: process.env.DB_PASSWORD || 'admin123',
     port: process.env.DB_PORT || 5432,
 });
 
