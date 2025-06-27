@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: veera17-postgres
+    ports:
+      - "5492:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: attendance_system
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - attendance-net
+
+  backend:
+    build: ./Backend
+    container_name: veera17-backend
+    ports:
+      - "3063:3063"
+    depends_on:
+      - postgres
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=admin123
+      - DB_HOST=postgres
+      - DB_NAME=attendance_system
+      - DB_PORT=5432
+      - PORT=3063
+    networks:
+      - attendance-net
+
+  frontend:
+    build: ./Frontend
+    container_name: veera17-frontend
+    ports:
+      - "8237:80"
+    depends_on:
+      - backend
+    networks:
+      - attendance-net
+
+  hr:
+    build: ./HR
+    container_name: veera17-hr
+    ports:
+      - "8238:80"
+    depends_on:
+      - backend
+    networks:
+      - attendance-net
+
+volumes:
+  pgdata:
+
+networks:
+  attendance-net:
+
