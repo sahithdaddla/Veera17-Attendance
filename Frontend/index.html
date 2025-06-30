@@ -613,8 +613,8 @@
             clockBtn.disabled = true;
             try {
                 const url = employeeId 
-                    ? `http://13.60.77.71:3063/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
-                    : 'http://13.60.77.71:3063/api/attendance';
+                    ? `http://16.171.255.115:3063/api/attendance?employee_id=${encodeURIComponent(employeeId)}`
+                    : 'http://16.171.255.115:3063/api/attendance';
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error('Failed to fetch attendance records');
@@ -624,7 +624,7 @@
 
                 // Check today's record
                 const today = new Date().toISOString().split('T')[0];
-                const todayResponse = await fetch(`http://13.60.77.71:3063/api/attendance/today/${encodeURIComponent(employeeId)}`);
+                const todayResponse = await fetch(`http://16.171.255.115:3063/api/attendance/today/${encodeURIComponent(employeeId)}`);
                 let todayRecord = null;
                 if (todayResponse.ok) {
                     todayRecord = await todayResponse.json();
@@ -751,7 +751,7 @@
                 // Check server for today's record
                 try {
                     const today = now.toISOString().split('T')[0];
-                    const todayResponse = await fetch(`http://13.60.77.71:3063/api/attendance/today/${encodeURIComponent(employeeId)}`);
+                    const todayResponse = await fetch(`http://16.171.255.115:3063/api/attendance/today/${encodeURIComponent(employeeId)}`);
                     if (todayResponse.ok) {
                         const todayRecord = await todayResponse.json();
                         empIdError.textContent = 'You have already clocked in for today.';
@@ -796,7 +796,7 @@
                 updateAttendanceTable();
 
                 try {
-                    const response = await fetch('http://13.60.77.71:3063/api/attendance', {
+                    const response = await fetch('http://16.171.255.115:3063/api/attendance', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -833,7 +833,7 @@
                 const today = now.toISOString().split('T')[0];
 
                 try {
-                    const response = await fetch(`http://13.60.77.71:3063/api/attendance/${employeeId}/${today}`, {
+                    const response = await fetch(`http://16.171.255.115:3063/api/attendance/${employeeId}/${today}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ clockOut: formatTime(now) })
